@@ -89,6 +89,29 @@ public class TablaHash<K, V> {
         return null;
     }
 
+    /**
+     * Duplica el tamaño del arreglo interno y reorganiza todos los elementos
+     * para disminuir las colisiones cuando la tabla se va llenando.
+     */
+    @SuppressWarnings("unchecked")
+    private void redimensionar() {
+        int nuevaCapacidad = capacidad * 2;
+        EntradaHash<K, V>[] viejosBuckets = buckets;
+        
+        this.capacidad = nuevaCapacidad;
+        this.buckets = (EntradaHash<K, V>[]) new EntradaHash[nuevaCapacidad];
+        this.tamaño = 0;
+
+        // Transfiere los elementos viejos enlazándolos a nuevos índices
+        for (int i = 0; i < viejosBuckets.length; i++) {
+            EntradaHash<K, V> actual = viejosBuckets[i];
+            while (actual != null) {
+                put(actual.getClave(), actual.getValor());
+                actual = actual.getSiguiente();
+            }
+        }
+    }
+
    
     public int size() {
         return tamaño;
