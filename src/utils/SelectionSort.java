@@ -2,24 +2,22 @@ package utils;
 
 import model.Pedido;
 
+/**
+ * Ordenamiento por seleccion (Selection Sort)
+ * Ordena pedidos por hora de ingreso de forma ascendente. Complejidad O(n^2).
+ */
 public class SelectionSort {
 
-    /**
-     * Ordena arreglo de Pedidos por hora (ascendente) usando Selection Sort.
-     * Complejidad: O(n²)
-     */
     public void ordenarPorHora(Pedido[] pedidos, int n) {
         for (int i = 0; i < n - 1; i++) {
             int indiceMinimo = i;
-            
-            // Buscar el elemento mínimo en la parte no ordenada
+
             for (int j = i + 1; j < n; j++) {
-                if (pedidos[j].getHora() < pedidos[indiceMinimo].getHora()) {
+                if (esMenor(pedidos[j], pedidos[indiceMinimo])) {
                     indiceMinimo = j;
                 }
             }
-            
-            // Intercambiar si se encontró un mínimo menor
+
             if (indiceMinimo != i) {
                 Pedido temporal = pedidos[i];
                 pedidos[i] = pedidos[indiceMinimo];
@@ -27,9 +25,13 @@ public class SelectionSort {
             }
         }
     }
-    
-    // Sobrecarga: infiere automáticamente el tamaño del arreglo
+
     public void ordenarPorHora(Pedido[] pedidos) {
         ordenarPorHora(pedidos, pedidos.length);
+    }
+
+    //Compara dos pedidos por su hora de ingreso 
+    private boolean esMenor(Pedido a, Pedido b) {
+        return a.getHoraIngreso().compareTo(b.getHoraIngreso()) < 0;
     }
 }

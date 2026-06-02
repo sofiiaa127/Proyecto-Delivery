@@ -1,66 +1,39 @@
 package utils;
 
+import model.Pedido;
+import model.Repartidor;
+
+
+//validacion de datos de entrada.
 public class ConsoleHelper {
 
-    /**
-     * Valida que la hora esté entre 0 y 23 (formato 24 horas).
-     */
-    public static boolean validarHora(int hora) {
-        return hora >= 0 && hora <= 23;
-    }
-    
-    /**
-     * Valida que un ID no sea negativo.
-     */
     public static boolean validarId(int id) {
         return id >= 0;
     }
-    
-    /**
-     * Valida que un texto no sea null ni esté vacío.
-     */
+
     public static boolean validarTexto(String texto) {
-        if (texto == null) {
-            return false;
-        }
-        return !texto.trim().isEmpty();
+        return texto != null && !texto.trim().isEmpty();
     }
-    
-    /**
-     * Valida un pedido completo (hora, id, prioridad).
-     */
-    public static boolean validarPedido(model.Pedido pedido) {
+
+    //Valida que la prioridad este en el rango permitido 
+    public static boolean validarPrioridad(int prioridad) {
+        return prioridad >= 1 && prioridad <= 5;
+    }
+
+    public static boolean validarPedido(Pedido pedido) {
         if (pedido == null) {
             return false;
         }
-        
-        if (!validarId(pedido.getIdPedido())) {
-            return false;
-        }
-        
-        if (!validarHora(pedido.getHora())) {
-            return false;
-        }
-        
-        return true;
+        return validarId(pedido.getId())
+                && validarTexto(pedido.getDescripcion())
+                && validarPrioridad(pedido.getPrioridad())
+                && validarTexto(pedido.getZonaDestino());
     }
-    
-    /**
-     * Valida un repartidor completo (id, nombre).
-     */
-    public static boolean validarRepartidor(model.Repartidor repartidor) {
+
+    public static boolean validarRepartidor(Repartidor repartidor) {
         if (repartidor == null) {
             return false;
         }
-        
-        if (!validarId(repartidor.getIdRepartidor())) {
-            return false;
-        }
-        
-        if (!validarTexto(repartidor.getNombre())) {
-            return false;
-        }
-        
-        return true;
+        return validarTexto(repartidor.getId()) && validarTexto(repartidor.getNombre());
     }
 }
