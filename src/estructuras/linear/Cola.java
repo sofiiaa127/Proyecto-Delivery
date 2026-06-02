@@ -1,29 +1,23 @@
 package estructuras.linear;
 
+/**
+ * Estructura lineal manual con comportamiento FIFO.
+ * Permite agregar elementos al final y retirar elementos del frente.
+ */
 
- //Estructura lineal manual que implementa el comportamiento FIFO.
- //Permite agregar elementos al final y retirar elementos del frente
- //@param <TipoDato> tipo de dato almacenado en la cola
- 
+
 public class Cola<TipoDato> {
-
     private Nodo<TipoDato> frente;
     private Nodo<TipoDato> finalCola;
     private int numeroElementos;
 
-    
-     //Crea una cola vacía
-    
     public Cola() {
         this.frente = null;
         this.finalCola = null;
         this.numeroElementos = 0;
     }
 
-    
-     //Agrega un elemento al final de la cola
-     //@param nuevoElemento dato que se va a encolar
-    
+    //Agrega un elemento al final de la cola. 
     public void encolar(TipoDato nuevoElemento) {
         Nodo<TipoDato> nuevoNodo = new Nodo<>(nuevoElemento);
 
@@ -34,13 +28,10 @@ public class Cola<TipoDato> {
             finalCola.asignarSiguiente(nuevoNodo);
             finalCola = nuevoNodo;
         }
-
         numeroElementos++;
     }
 
-      //Retira y devuelve el elemento del frente de la cola
-      //@return elemento del frente, o null si la cola está vacía
-    
+    // Retira y devuelve el elemento del frente (o null si esta vacia).
     public TipoDato desencolar() {
         if (estaVacia()) {
             return null;
@@ -57,28 +48,30 @@ public class Cola<TipoDato> {
         return datoDelFrente;
     }
 
-    
-     //Indica si la cola no contiene elementos
-     
     public boolean estaVacia() {
         return frente == null;
     }
 
-    
-     //Obtiene el elemento del frente sin retirarlo
-   
     public TipoDato consultarFrente() {
         if (estaVacia()) {
             return null;
         }
-
         return frente.obtenerDato();
     }
 
-    
-     //Obtiene la cantidad de elementos almacenados
-    
     public int obtenerNumeroElementos() {
         return numeroElementos;
+    }
+
+    //Invierte el contenido de la cola de frente a final en un arreglo, sin retirar elementos. 
+    public Object[] aArreglo() {
+        Object[] elementos = new Object[numeroElementos];
+        Nodo<TipoDato> actual = frente;
+        int i = 0;
+        while (actual != null) {
+            elementos[i++] = actual.obtenerDato();
+            actual = actual.obtenerSiguiente();
+        }
+        return elementos;
     }
 }
