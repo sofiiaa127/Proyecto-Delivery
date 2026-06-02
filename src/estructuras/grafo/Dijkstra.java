@@ -1,29 +1,34 @@
 package estructuras.grafo;
 
+/**
+ * Algoritmo de Dijkstra para encontrar la ruta mas corta entre dos zonas del mapa.
+ */
+
 
 public class Dijkstra {
-
-    public void calcularRuta(Grafo mapa, int indiceOrigen, int indiceDestino) {
+    public ResultadoDijkstra calcular(Grafo mapa, int indiceOrigen, int indiceDestino) {
         int n = mapa.getCantidadZonas();
         Vertice[] zonas = mapa.getZonas();
 
         int[] distancias = new int[n];
-        int[] zonasPrevias = new int[n];
+        int[] previos = new int[n];
         boolean[] visitados = new boolean[n];
 
-        
         for (int i = 0; i < n; i++) {
             distancias[i] = Integer.MAX_VALUE;
-            zonasPrevias[i] = -1;
+            previos[i] = -1;
             visitados[i] = false;
+        }
+
+        if (indiceOrigen < 0 || indiceDestino < 0) {
+            return new ResultadoDijkstra(new int[0], 0, false);
         }
 
         distancias[indiceOrigen] = 0;
 
-      
-        for (int i = 0; i < n - 1; i++) {
+        for (int i = 0; i < n; i++) {
             int u = obtenerVerticeConMenorDistancia(distancias, visitados, n);
-            if (u == -1) break; 
+            if (u == -1) break;
 
             visitados[u] = true;
 
@@ -32,17 +37,41 @@ public class Dijkstra {
                 int v = obtenerIndicePorVertice(zonas, actual.getDestino(), n);
                 int peso = actual.getPesoMinutos();
 
-                if (!visitados[v] && distancias[u] != Integer.MAX_VALUE && 
+                if (v != -1 && !visitados[v] && distancias[u] != Integer.MAX_VALUE &&
                     distancias[u] + peso < distancias[v]) {
-                    
+
                     distancias[v] = distancias[u] + peso;
-                    zonasPrevias[v] = u; 
+                    previos[v] = u;
                 }
                 actual = actual.getSiguiente();
             }
         }
 
-        imprimirResultado(zonas, indiceOrigen, indiceDestino, distancias, zonasPrevias);
+        if (distancias[indiceDestino] == Integer.MAX_VALUE) {
+            return new ResultadoDijkstra(new int[0], 0, false);
+        }
+
+        int[] ruta = reconstruirRuta(previos, indiceDestino);
+        return new ResultadoDijkstra(ruta, distancias[indiceDestino], true);
+    }
+
+    public void calcularRuta(Grafo mapa, int indiceOrigen, int indiceDestino) {
+        ResultadoDijkstra resultado = calcular(mapa, indiceOrigen, indiceDestino);
+        Vertice[] zonas = mapa.getZonas();
+
+        if (!resultado.existeRuta()) {
+            System.out.println("No se encontro una ruta hacia el cliente.");
+            return;
+        }
+
+        int[] ruta = resultado.getRuta();
+        StringBuilder sb = new StringBuilder("Ruta mas rapida: ");
+        for (int i = 0; i < ruta.length; i++) {
+            sb.append(zonas[ruta[i]].getNombreZona());
+            if (i < ruta.length - 1) sb.append(" -> ");
+        }
+        System.out.println(sb.toString());
+        System.out.println("-> Tiempo total de entrega: " + resultado.getMinutosTotales() + " minutos.");
     }
 
     private int obtenerVerticeConMenorDistancia(int[] distancias, boolean[] visitados, int n) {
@@ -65,20 +94,20 @@ public class Dijkstra {
         return -1;
     }
 
-    private void imprimirResultado(Vertice[] zonas, int origen, int destino, int[] distancias, int[] previos) {
-        if (distancias[destino] == Integer.MAX_VALUE) {
-            System.out.println("No se encontró una ruta hacia el cliente.");
-            return;
+    private int[] reconstruirRuta(int[] previos, int destino) {
+        int longitud = 0;
+        int actual = destino;
+        while (actual != -1) {
+            longitud++;
+            actual = previos[actual];
         }
 
-        System.out.print("Ruta más rápida desde [" + zonas[origen].getNombreZona() + "] hasta [" + zonas[destino].getNombreZona() + "]: ");
-        imprimirCaminoRecursivo(zonas, destino, previos);
-        System.out.println("\n-> Tiempo total de entrega: " + distancias[destino] + " minutos.");
-    }
-
-    private void imprimirCaminoRecursivo(Vertice[] zonas, int actual, int[] previos) {
-        if (actual == -1) return;
-        imprimirCaminoRecursivo(zonas, previos[actual], previos);
-        System.out.print(zonas[actual].getNombreZona() + " -> ");
+        int[] ruta = new int[longitud];
+        actual = destino;
+        for (int i = longitud - 1; i >= 0; i--) {
+            ruta[i] = actual;
+            actual = previos[actual];
+        }
+        return ruta;
     }
 }

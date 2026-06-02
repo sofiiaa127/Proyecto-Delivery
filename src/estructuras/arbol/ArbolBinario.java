@@ -1,8 +1,15 @@
 package estructuras.arbol;
+/**
+ * Arbol Binario de Busqueda para rankear restaurantes por calificacion.
+ * La calificacion se guarda como entero 
+ * El Top 5 se obtiene con un recorrido inverso (in-order de mayor a menor).
+ */
+
 
 public class ArbolBinario {
     private NodoArbol raiz;
-    private int contadorTop; 
+    private int contadorTop;
+    private String[] bufferTop;
 
     public ArbolBinario() {
         this.raiz = null;
@@ -16,7 +23,6 @@ public class ArbolBinario {
         if (nodo == null) {
             return new NodoArbol(nombre, calificacion);
         }
-        // Las calificaciones menores van a la izquierda, mayores a la derecha
         if (calificacion < nodo.getCalificacion()) {
             nodo.setIzquierdo(insertarRecursivo(nodo.getIzquierdo(), nombre, calificacion));
         } else {
@@ -25,22 +31,36 @@ public class ArbolBinario {
         return nodo;
     }
 
-    public void mostrarTop5() {
-        System.out.println("--- Top 5 Restaurantes ---");
+    public String[] obtenerTop5() {
+        bufferTop = new String[5];
         contadorTop = 0;
-        recorridoInverso(raiz);
+        recorridoInversoBuffer(raiz);
+
+        String[] resultado = new String[contadorTop];
+        for (int i = 0; i < contadorTop; i++) {
+            resultado[i] = bufferTop[i];
+        }
+        return resultado;
     }
 
-    private void recorridoInverso(NodoArbol nodo) {
+    private void recorridoInversoBuffer(NodoArbol nodo) {
         if (nodo != null && contadorTop < 5) {
-            recorridoInverso(nodo.getDerecho()); 
+            recorridoInversoBuffer(nodo.getDerecho());
             if (contadorTop < 5) {
-                System.out.println((contadorTop + 1) + ". " + nodo.getNombreRestaurante() + 
-                                   " - Calificación: " + nodo.getCalificacion() + " estrellas");
+                double estrellas = nodo.getCalificacion() / 10.0;
+                bufferTop[contadorTop] = (contadorTop + 1) + ". " + nodo.getNombreRestaurante()
+                        + "  -  " + String.format("%.1f", estrellas) + " estrellas";
                 contadorTop++;
             }
-            
-            recorridoInverso(nodo.getIzquierdo());
+            recorridoInversoBuffer(nodo.getIzquierdo());
+        }
+    }
+    
+    public void mostrarTop5() {
+        String[] top = obtenerTop5();
+        System.out.println("--- Top 5 Restaurantes ---");
+        for (String linea : top) {
+            System.out.println(linea);
         }
     }
 }
