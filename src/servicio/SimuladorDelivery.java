@@ -2,70 +2,57 @@ package servicio;
 
 import model.Pedido;
 import model.Repartidor;
+import model.Restaurante;
 import utils.GeneradorDatos;
 import utils.ConsoleHelper;
 
+/**
+ * Prueba por consola de toda la logica del simulador (sin interfaz grafica).
+ * Util para verificar colas, prioridad, hash, grafo y reporte.
+ */
 public class SimuladorDelivery {
 
-    /**
-     * Método principal para probar todo el sistema de delivery.
-     * Crea pedidos de prueba, ejecuta simulación y genera reporte.
-     */
     public static void main(String[] args) {
-        System.out.println("=== INICIANDO SIMULADOR DE DELIVERY ===\n");
-        
-        // Crear instancias de servicios
-        DeliveryService deliveryService = new DeliveryService();
+        System.out.println("---- SIMULADOR DE DELIVERY (consola) ----\n");
+
+        DeliveryService servicio = new DeliveryService();
         GeneradorDatos generador = new GeneradorDatos();
-        
-        // Agregar repartidores libres
-        Repartidor[] repartidores = generador.generarRepartidores(5);
-        for (int i = 0; i < repartidores.length; i++) {
-            if (repartidores[i] != null) {
-                deliveryService.agregarRepartidorLibre(repartidores[i]);
+
+        for (Repartidor repartidor : generador.generarRepartidores(4)) {
+            if (ConsoleHelper.validarRepartidor(repartidor)) {
+                servicio.agregarRepartidor(repartidor);
             }
         }
-        
-        // Crear y procesar 5 pedidos de prueba
-        Pedido[] pedidosPrueba = generador.generarPedidos(5);
-        
-        System.out.println("Procesando pedidos...");
-        for (int i = 0; i < pedidosPrueba.length; i++) {
-            if (pedidosPrueba[i] != null) {
-                // Validar pedido antes de procesar
-                if (ConsoleHelper.validarPedido(pedidosPrueba[i])) {
-                    deliveryService.procesarPedido(pedidosPrueba[i]);
-                    System.out.println("Pedido #" + pedidosPrueba[i].getIdPedido() + 
-                                       " procesado (" + (pedidosPrueba[i].isVip() ? "VIP" : "Normal") + ")");
-                } else {
-                    System.out.println("Pedido #" + pedidosPrueba[i].getIdPedido() + " INVÁLIDO, saltando...");
-                }
+        for (Restaurante restaurante : generador.generarRestaurantes()) {
+            servicio.agregarRestaurante(restaurante);
+        }
+
+        Pedido[] pedidos = generador.generarPedidos(6);
+        for (Pedido pedido : pedidos) {
+            if (ConsoleHelper.validarPedido(pedido)) {
+                servicio.registrarPedido(pedido);
+                System.out.println("Registrado pedido #" + pedido.getId()
+                        + (pedido.isEsVip() ? " [VIP]" : " [Normal]"));
             }
         }
-        
-        System.out.println("\nPedidos pendientes en cocina: " + deliveryService.obtenerPedidosPendientes());
-        
-        // Ejecutar ciclos de simulación hasta procesar todos los pedidos
-        System.out.println("\nEjecutando simulación...");
-        int ciclos = 0;
-        while (deliveryService.cicloSimular()) {
-            ciclos++;
-            System.out.println("Ciclo " + ciclos + " completado");
+
+        System.out.println("\nPedidos pendientes: " + servicio.obtenerPedidosPendientes());
+        System.out.println("\nProcesando...");
+        ResultadoCiclo resultado;
+        while ((resultado = servicio.procesarSiguientePedido()).isExito()) {
+            System.out.println("  " + resultado.getMensaje()
+                    + "  (" + resultado.getRuta().getMinutosTotales() + " min)");
         }
-        
-        System.out.println("Simulación finalizada en " + ciclos + " ciclos");
-        
-        // Generar reporte .txt
-        System.out.println("\nGenerando reporte...");
-        ReporteService reporteService = new ReporteService(deliveryService);
-        boolean reporteExitoso = reporteService.generarReporteDia(pedidosPrueba, pedidosPrueba.length);
-        
-        if (reporteExitoso) {
-            System.out.println("✓ Reporte generado exitosamente: pedidos_dia.txt");
-        } else {
-            System.out.println("✗ Error al generar reporte");
+
+        System.out.println("\nTop 5 restaurantes:");
+        for (String linea : servicio.obtenerTop5Restaurantes()) {
+            System.out.println("  " + linea);
         }
-        
-        System.out.println("\n=== SIMULACIÓN FINALIZADA ===");
+
+        ReporteService reporte = new ReporteService();
+        boolean ok = reporte.generarReporteDia(servicio.obtenerTodosPedidos(),
+                servicio.obtenerTotalPedidos(), "reportes/pedidos_dia.txt");
+        System.out.println("\nReporte generado: " + ok);
+        System.out.println("\n---- FIN ----");
     }
 }
