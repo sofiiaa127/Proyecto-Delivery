@@ -76,7 +76,7 @@ public class PanelSwing extends JFrame {
     //  CABECERA
     private JComponent crearCabecera() {
         JPanel barra = new JPanel(new BorderLayout());
-        barra.setBackground(FONDO);
+        barra.setBackground(PANEL); 
 
         JLabel titulo = new JLabel("  Delivery Express");
         titulo.setForeground(TEXTO);
